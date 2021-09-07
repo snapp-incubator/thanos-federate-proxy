@@ -1,4 +1,4 @@
-module github.com/m-yosefpor/thanos-federate-proxy
+module github.com/snapp-incubator/thanos-federate-proxy
 
 go 1.16
 

@@ -10,14 +10,14 @@ The most common use case for this proxy is to be used as a side car with [Thanos
 ### Docker
 
 ```bash
-sudo docker run -p 9099:9099 ghcr.io/m-yosefpor/thanos-federate-proxy/image:latest -insecure-listen-address="0.0.0.0:9099"
+sudo docker run -p 9099:9099 ghcr.io/snapp-incubator/thanos-federate-proxy/image:latest -insecure-listen-address="0.0.0.0:9099"
 ```
 
 ### Binary releases
 
 ```bash
 export VERSION=0.1.0
-wget https://github.com/m-yosefpor/thanos-federate-proxy/releases/download/v${VERSION}/thanos-federate-proxy-${VERSION}.linux-amd64.tar.gz
+wget https://github.com/snapp-incubator/thanos-federate-proxy/releases/download/v${VERSION}/thanos-federate-proxy-${VERSION}.linux-amd64.tar.gz
 tar xvzf thanos-federate-proxy-${VERSION}.linux-amd64.tar.gz thanos-federate-proxy-${VERSION}.linux-amd64/thanos-federate-proxy
 ```
 
@@ -25,7 +25,7 @@ tar xvzf thanos-federate-proxy-${VERSION}.linux-amd64.tar.gz thanos-federate-pro
 ### From source
 
 ```
-git clone https://github.com/m-yosefpor/thanos-federate-proxy
+git clone https://github.com/snapp-incubator/thanos-federate-proxy
 go build
 ./thanos-federate-proxy <optional-extra-flags>
 ```
@@ -52,7 +52,7 @@ Sample k8s deployment (as a side car with thanos or prometheus):
 containers:
   ...
 - name: thanos-federate-proxy
-  image: ghcr.io/m-yosefpor/thanos-federate-proxy/image:latest
+  image: ghcr.io/snapp-incubator/thanos-federate-proxy/image:latest
   args:
   - -insecure-listen-address=0.0.0.0:9099
   - -upstream=http://127.0.0.1:9090
