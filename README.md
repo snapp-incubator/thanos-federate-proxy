@@ -10,7 +10,7 @@ The most common use case for this proxy is to be used as a side car with [Thanos
 ### Docker
 
 ```bash
-sudo docker run -p 9099:9099 ghcr.io/snapp-incubator/thanos-federate-proxy/image:latest -insecure-listen-address="0.0.0.0:9099"
+sudo docker run -p 9099:9099 ghcr.io/snapp-incubator/thanos-federate-proxy:main -insecure-listen-address="0.0.0.0:9099"
 ```
 
 ### Binary releases
@@ -52,7 +52,7 @@ Sample k8s deployment (as a side car with thanos or prometheus):
 containers:
   ...
 - name: thanos-federate-proxy
-  image: ghcr.io/snapp-incubator/thanos-federate-proxy/image:latest
+  image: ghcr.io/snapp-incubator/thanos-federate-proxy:main
   args:
   - -insecure-listen-address=0.0.0.0:9099
   - -upstream=http://127.0.0.1:9090
