@@ -12,6 +12,7 @@ import (
 	"github.com/prometheus/client_golang/api"
 	v1 "github.com/prometheus/client_golang/api/prometheus/v1"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/model"
 	"k8s.io/klog/v2"
 )
@@ -61,6 +62,7 @@ func main() {
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
+	mux.Handle("/metrics", promhttp.Handler())
 	mux.HandleFunc("/federate", func(w http.ResponseWriter, r *http.Request) {
 		federate(ctx, w, r, apiClient)
 	})
