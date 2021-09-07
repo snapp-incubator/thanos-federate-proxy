@@ -15,15 +15,12 @@ jobs:
         uses: golangci/golangci-lint-action@v2
         with:
           version: latest
-          args: --enable-all
   test:
     name: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
-      - run: cd deployments && docker-compose up -d
-      - run: cd cmd/saf
       - run: go test -v ./... -covermode=atomic -coverprofile=coverage.out
       - uses: codecov/codecov-action@v1
         with:

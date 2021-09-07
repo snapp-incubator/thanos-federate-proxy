@@ -26,7 +26,7 @@ tar xvzf thanos-federate-proxy-${VERSION}.linux-amd64.tar.gz thanos-federate-pro
 
 ```
 git clone https://github.com/snapp-incubator/thanos-federate-proxy
-go build
+cd thanos-federate-proxy && go build
 ./thanos-federate-proxy <optional-extra-flags>
 ```
 
@@ -99,16 +99,14 @@ The following limitations will be addressed in future releases (see [Roadmap](#r
 - [x] tlsSkipVerify flag
 - [x] Dockerfile
 - [x] github actions
+- [x] metrics
 - [ ] support multiple matchers
 - [ ] support empty matchers
 - [ ] support store-API for better performance
-- [ ] metrics
 - [ ] return error message instead of only logging it (??)
 - [ ] remove space after comma in metrics (causing no issues)
 
 ## Metrics
-
-(To be done)
 
 | Metric                                              | Notes
 |-----------------------------------------------------|------------------------------------
