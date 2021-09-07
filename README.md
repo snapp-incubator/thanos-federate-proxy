@@ -10,7 +10,7 @@ The most common use case for this proxy is to be used as a side car with [Thanos
 ### Docker
 
 ```bash
-sudo docker run -p 9099:9099 ghcr.io/m-yosefpor/thanos-federate-proxy/image:latest
+sudo docker run -p 9099:9099 ghcr.io/m-yosefpor/thanos-federate-proxy/image:latest -insecure-listen-address="0.0.0.0:9099"
 ```
 
 ### Binary releases
@@ -20,10 +20,6 @@ export VERSION=0.1.0
 wget https://github.com/m-yosefpor/thanos-federate-proxy/releases/download/v${VERSION}/thanos-federate-proxy-${VERSION}.linux-amd64.tar.gz
 tar xvzf thanos-federate-proxy-${VERSION}.linux-amd64.tar.gz thanos-federate-proxy-${VERSION}.linux-amd64/thanos-federate-proxy
 ```
-
-### Helm chart
-
-  (To be added)
 
 
 ### From source
@@ -50,9 +46,11 @@ Flags:
         The upstream thanos URL (default "http://127.0.0.1:9090")
 ```
 
-Sample k8s deployment:
+Sample k8s deployment (as a side car with thanos or prometheus):
 
 ```yml
+containers:
+  ...
 - name: thanos-federate-proxy
   image: ghcr.io/m-yosefpor/thanos-federate-proxy/image:latest
   args:
@@ -101,7 +99,6 @@ The following limitations will be addressed in future releases (see [Roadmap](#r
 - [x] tlsSkipVerify flag
 - [x] Dockerfile
 - [x] github actions
-- [ ] charts
 - [ ] support multiple matchers
 - [ ] support empty matchers
 - [ ] support store-API for better performance
