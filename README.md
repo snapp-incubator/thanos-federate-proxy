@@ -112,10 +112,9 @@ The following limitations will be addressed in future releases (see [Roadmap](#r
 
 | Metric                                              | Notes
 |-----------------------------------------------------|------------------------------------
-| thanosfederateproxy_scrape_requests_total     | Total number of scrape requests
-| thanosfederateproxy_scrape_duration_seconds_count     | Total number of scrape requests with response code
+| thanosfederateproxy_scrape_duration_seconds_count   | Total number of scrape requests with response code
 | thanosfederateproxy_scrape_duration_seconds_sum     | Duration of scrape requests with response code
-| thanosfederateproxy_scrape_duration_seconds_bucket     | Count of scrape requests per bucket (for calculating percentile)
+| thanosfederateproxy_scrape_duration_seconds_bucket  | Count of scrape requests per bucket (for calculating percentile)
 
 ## Security
 

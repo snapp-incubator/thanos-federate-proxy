@@ -11,6 +11,7 @@ import (
 
 	"github.com/prometheus/client_golang/api"
 	v1 "github.com/prometheus/client_golang/api/prometheus/v1"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/model"
 	"k8s.io/klog/v2"
 )
@@ -72,18 +73,33 @@ func federate(ctx context.Context, w http.ResponseWriter, r *http.Request, apiCl
 	matchQuery := r.URL.Query().Get("match[]")
 
 	nctx, ncancel := context.WithTimeout(r.Context(), 2*time.Minute)
+	start := time.Now()
 	val, _, err := apiClient.Query(nctx, matchQuery, time.Now()) // Ignoring warnings for now.
+	responseTime := time.Since(start).Seconds()
 	ncancel()
+
 	if err != nil {
 		klog.Errorf("query failed:", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		scrapeDurations.With(prometheus.Labels{
+			"match_query": matchQuery,
+			"status_code": "500",
+		}).Observe(responseTime)
 		return
 	}
 	if val.Type() != model.ValVector {
 		klog.Errorf("query result is not a vector: %v", val.Type())
 		w.WriteHeader(http.StatusInternalServerError)
+		scrapeDurations.With(prometheus.Labels{
+			"match_query": matchQuery,
+			"status_code": "502",
+		}).Observe(responseTime)
 		return
 	}
+	scrapeDurations.With(prometheus.Labels{
+		"match_query": matchQuery,
+		"status_code": "200",
+	}).Observe(responseTime)
 	printVector(w, val)
 }
 
