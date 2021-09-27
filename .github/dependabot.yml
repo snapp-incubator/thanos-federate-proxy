@@ -8,3 +8,12 @@ updates:
       - m-yosefpor
     labels:
       - dependencies
+
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    assignees:
+      - m-yosefpor
+    labels:
+      - dependencies
