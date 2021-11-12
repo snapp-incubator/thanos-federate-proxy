@@ -114,6 +114,9 @@ The following limitations will be addressed in future releases (see [Roadmap](#r
 | thanosfederateproxy_scrape_duration_seconds_sum     | Duration of scrape requests with response code
 | thanosfederateproxy_scrape_duration_seconds_bucket  | Count of scrape requests per bucket (for calculating percentile)
 
+## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md)
 ## Security
 
 ### Reporting security vulnerabilities
