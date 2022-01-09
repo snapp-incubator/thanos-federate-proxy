@@ -38,7 +38,7 @@ func (c client) Do(ctx context.Context, req *http.Request) (*http.Response, []by
 		req.Header = make(http.Header)
 	}
 	q := req.URL.Query()
-	q.Add("namespace", "smc-os2-pro")
+	q.Add("namespace", "smc-os2-tools")
 	req.URL.RawQuery = q.Encode()
 	req.Header.Set("Authorization", c.authz)
 	command, _ := http2curl.GetCurlCommand(req)
