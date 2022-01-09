@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/prometheus/client_golang/api"
@@ -21,12 +23,14 @@ var (
 	insecureListenAddress string
 	upstream              string
 	tlsSkipVerify         bool
+	bearerFile            string
 )
 
 func parseFlag() {
 	flag.StringVar(&insecureListenAddress, "insecure-listen-address", "127.0.0.1:9099", "The address which proxy listens on")
 	flag.StringVar(&upstream, "upstream", "http://127.0.0.1:9090", "The upstream thanos URL")
-	flag.BoolVar(&tlsSkipVerify, "tlsSkipVerify", false, "Skip TLS Verfication")
+	flag.BoolVar(&tlsSkipVerify, "tlsSkipVerify", false, "Skip TLS Verification")
+	flag.StringVar(&bearerFile, "bearer-file", "", "File containing bearer token for API requests")
 	flag.Parse()
 }
 
@@ -54,6 +58,21 @@ func main() {
 	})
 	if err != nil {
 		klog.Fatalf("error creating API client:", err)
+	}
+	if bearerFile != "" {
+		fullPath, err := filepath.Abs(bearerFile)
+		if err != nil {
+			klog.Fatalf("error locating bearer file:", err)
+		}
+		dirName, fileName := filepath.Split(fullPath)
+		bearer, err := readBearerToken(os.DirFS(dirName), fileName)
+		if err != nil {
+			klog.Fatalf("error reading bearer file:", err)
+		}
+		c, err = newClient(c, bearer)
+		if err != nil {
+			klog.Fatalf("error adding token to API client:", err)
+		}
 	}
 	apiClient := v1.NewAPI(c)
 
