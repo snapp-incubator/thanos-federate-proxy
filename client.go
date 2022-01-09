@@ -4,8 +4,10 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"io"
 	"io/fs"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/prometheus/client_golang/api"
@@ -37,9 +39,26 @@ func (c client) Do(ctx context.Context, req *http.Request) (*http.Response, []by
 	if req.Header == nil {
 		req.Header = make(http.Header)
 	}
-	q := req.URL.Query()
-	q.Add("namespace", "smc-os2-tools")
-	req.URL.RawQuery = q.Encode()
+	params := req.URL.Query()
+	if req.Method == http.MethodPost && req.Header.Get("Content-Type") == "application/x-www-form-urlencoded" {
+		payload, err := io.ReadAll(req.Body)
+		req.Body.Close()
+		if err != nil {
+			return nil, nil, err
+		}
+		postParams, err := url.ParseQuery(string(payload))
+		if err != nil {
+			return nil, nil, err
+		}
+		for name, values := range postParams {
+			for _, value := range values {
+				params.Add(name, value)
+			}
+		}
+		req.Method = http.MethodGet
+	}
+	params.Add("namespace", "smc-os2-tools")
+	req.URL.RawQuery = params.Encode()
 	req.Header.Set("Authorization", c.authz)
 	command, _ := http2curl.GetCurlCommand(req)
 	klog.Infof("Forwarded request: %s", command)
