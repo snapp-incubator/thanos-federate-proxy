@@ -39,7 +39,7 @@ func (c client) Do(ctx context.Context, req *http.Request) (*http.Response, []by
 	}
 	req.Header.Set("Authorization", c.authz)
 	command, _ := http2curl.GetCurlCommand(req)
-	klog.Info("Forwarded request ", command)
+	klog.Infof("Forwarded request: %s", command)
 	return c.Client.Do(ctx, req)
 }
 

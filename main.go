@@ -73,6 +73,7 @@ func main() {
 		if err != nil {
 			klog.Fatalf("error adding token to API client:", err)
 		}
+		klog.Infof("Using bearer token from file %s", bearerFile)
 	}
 	apiClient := v1.NewAPI(c)
 
