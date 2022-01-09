@@ -30,18 +30,18 @@ const (
 // Client wraps prometheus api.Client to add custom headers to every request
 type client struct {
 	api.Client
-	authz string
-	asGet bool
+	authz string // Authorization header
+	asGet bool   // True to reject POST requests
 }
 
 type paramKey int
 
-// addParams inserts the provided request params in context
+// addValues inserts the provided request params in context
 func addValues(ctx context.Context, params url.Values) context.Context {
 	return context.WithValue(ctx, paramKey(0), params)
 }
 
-// getParams extract from context the params provided by addParams
+// getValues extracts from context the params provided by addParams
 func getValues(ctx context.Context) (url.Values, bool) {
 	if ctxValue := ctx.Value(paramKey(0)); ctxValue != nil {
 		if params, ok := ctxValue.(url.Values); ok {
