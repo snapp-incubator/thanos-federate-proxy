@@ -88,7 +88,8 @@ func TestClient(t *testing.T) {
 			if err != nil {
 				t.Fatal(fmt.Sprintf("Expected no error, got %v", err))
 			}
-			c.Do(context.TODO(), &http.Request{})
+			req, _ := http.NewRequest(http.MethodGet, "http://localhost/test", nil)
+			c.Do(context.TODO(), req)
 			if m.header == nil || len(m.header) <= 0 {
 				t.Fatal("Empty headers in request")
 			}

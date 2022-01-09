@@ -9,6 +9,8 @@ import (
 	"strings"
 
 	"github.com/prometheus/client_golang/api"
+	"k8s.io/klog/v2"
+	"moul.io/http2curl"
 )
 
 // TokenError returned when the token file is empty or invalid
@@ -36,6 +38,8 @@ func (c client) Do(ctx context.Context, req *http.Request) (*http.Response, []by
 		req.Header = make(http.Header)
 	}
 	req.Header.Set("Authorization", c.authz)
+	command, _ := http2curl.GetCurlCommand(req)
+	klog.Info("Forwarded request ", command)
 	return c.Client.Do(ctx, req)
 }
 

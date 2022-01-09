@@ -6,6 +6,7 @@ require (
 	github.com/prometheus/client_golang v1.11.0
 	github.com/prometheus/common v0.32.1
 	k8s.io/klog/v2 v2.30.0
+	moul.io/http2curl v1.0.0
 )
 
 require (
