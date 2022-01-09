@@ -7,39 +7,55 @@ import (
 	"io/fs"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/prometheus/client_golang/api"
-	"k8s.io/klog/v2"
-	"moul.io/http2curl"
 )
 
-// TokenError returned when the token file is empty or invalid
-type TokenError string
+// ClientConfigError returned when the token file is empty or invalid
+type ClientConfigError string
 
 // Error implements error
-func (err TokenError) Error() string {
+func (err ClientConfigError) Error() string {
 	return string(err)
 }
 
 const (
-	EmptyBearerFileError    = TokenError("First line of bearer token file is empty")
-	InvalidBearerTokenError = TokenError("Bearer token must be ASCII")
+	EmptyBearerFileError    = ClientConfigError("First line of bearer token file is empty")
+	InvalidBearerTokenError = ClientConfigError("Bearer token must be ASCII")
+	NilOptionError          = ClientConfigError("configOption cannot be nil")
 )
 
 // Client wraps prometheus api.Client to add custom headers to every request
 type client struct {
 	api.Client
 	authz string
+	asGet bool
+}
+
+type paramKey int
+
+// addParams inserts the provided request params in context
+func addValues(ctx context.Context, params url.Values) context.Context {
+	return context.WithValue(ctx, paramKey(0), params)
+}
+
+// getParams extract from context the params provided by addParams
+func getValues(ctx context.Context) (url.Values, bool) {
+	if ctxValue := ctx.Value(paramKey(0)); ctxValue != nil {
+		if params, ok := ctxValue.(url.Values); ok {
+			return params, true
+		}
+	}
+	return nil, false
 }
 
 // Do implements api.Client
 func (c client) Do(ctx context.Context, req *http.Request) (*http.Response, []byte, error) {
-	if req.Header == nil {
-		req.Header = make(http.Header)
-	}
-	// Force use GET
-	if req.Method == http.MethodPost {
+	if c.asGet && req.Method == http.MethodPost {
+		// If response to POST is http.StatusMethodNotAllowed,
+		// Prometheus api library will failover to GET.
 		return &http.Response{
 			Status:        "Method Not Allowed",
 			StatusCode:    http.StatusMethodNotAllowed,
@@ -52,12 +68,22 @@ func (c client) Do(ctx context.Context, req *http.Request) (*http.Response, []by
 			Header:        make(http.Header, 0),
 		}, nil, nil
 	}
-	params := req.URL.Query()
-	params.Add("namespace", "smc-os2-tools")
-	req.URL.RawQuery = params.Encode()
-	req.Header.Set("Authorization", c.authz)
-	command, _ := http2curl.GetCurlCommand(req)
-	klog.Infof("Forwarded request: %s", command)
+	// If context includes URL parameters, append them to the query
+	if params, ok := getValues(ctx); ok {
+		reqParams := req.URL.Query()
+		for name, values := range params {
+			for _, value := range values {
+				reqParams.Add(name, value)
+			}
+		}
+		req.URL.RawQuery = reqParams.Encode()
+	}
+	if c.authz != "" {
+		if req.Header == nil {
+			req.Header = make(http.Header)
+		}
+		req.Header.Set("Authorization", c.authz)
+	}
 	return c.Client.Do(ctx, req)
 }
 
@@ -89,14 +115,40 @@ func isAscii(str string) bool {
 	return true
 }
 
-// newClient wrapping given api.Client
-func newClient(c api.Client, bearer string) (client, error) {
-	bearer = strings.TrimSpace(bearer)
-	if bearer == "" || !isAscii(bearer) {
-		return client{}, InvalidBearerTokenError
+// clientOption implements functional options pattern for client
+type clientOption func(c *client) error
+
+// newClient wraps an api.Client adding the given options
+func newClient(c api.Client, opts ...clientOption) (client, error) {
+	result := client{Client: c}
+	if len(opts) > 0 {
+		for _, opt := range opts {
+			// catch wrong calls to newClient(c, nil)
+			if opt == nil {
+				return client{}, NilOptionError
+			}
+			if err := opt(&result); err != nil {
+				return client{}, err
+			}
+		}
 	}
-	return client{
-		Client: c,
-		authz:  fmt.Sprintf("Bearer %s", bearer),
-	}, nil
+	return result, nil
+}
+
+// withToken adds Authz bearer token to all requests
+func withToken(bearer string) clientOption {
+	return func(c *client) error {
+		bearer = strings.TrimSpace(bearer)
+		if bearer == "" || !isAscii(bearer) {
+			return InvalidBearerTokenError
+		}
+		c.authz = fmt.Sprintf("Bearer %s", bearer)
+		return nil
+	}
+}
+
+// withGet only allows GET queries
+func withGet(c *client) error {
+	c.asGet = true
+	return nil
 }
