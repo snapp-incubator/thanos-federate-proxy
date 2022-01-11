@@ -79,10 +79,8 @@ func main() {
 		klog.Infof("Forcing api,Client to use GET requests")
 		options = append(options, withGet)
 	}
-	if len(options) > 0 {
-		if c, err = newClient(c, options...); err != nil {
-			klog.Fatalf("error building custom API client:", err)
-		}
+	if c, err = newClient(c, options...); err != nil {
+		klog.Fatalf("error building custom API client:", err)
 	}
 	apiClient := v1.NewAPI(c)
 
