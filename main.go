@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/prometheus/client_golang/api"
@@ -21,12 +23,16 @@ var (
 	insecureListenAddress string
 	upstream              string
 	tlsSkipVerify         bool
+	bearerFile            string
+	forceGet              bool
 )
 
 func parseFlag() {
 	flag.StringVar(&insecureListenAddress, "insecure-listen-address", "127.0.0.1:9099", "The address which proxy listens on")
 	flag.StringVar(&upstream, "upstream", "http://127.0.0.1:9090", "The upstream thanos URL")
-	flag.BoolVar(&tlsSkipVerify, "tlsSkipVerify", false, "Skip TLS Verfication")
+	flag.BoolVar(&tlsSkipVerify, "tlsSkipVerify", false, "Skip TLS Verification")
+	flag.StringVar(&bearerFile, "bearer-file", "", "File containing bearer token for API requests")
+	flag.BoolVar(&forceGet, "force-get", false, "Force api.Client to use GET by rejecting POST requests")
 	flag.Parse()
 }
 
@@ -55,6 +61,27 @@ func main() {
 	if err != nil {
 		klog.Fatalf("error creating API client:", err)
 	}
+	// Collect client options
+	options := []clientOption{}
+	if bearerFile != "" {
+		fullPath, err := filepath.Abs(bearerFile)
+		if err != nil {
+			klog.Fatalf("error locating bearer file:", err)
+		}
+		dirName, fileName := filepath.Split(fullPath)
+		bearer, err := readBearerToken(os.DirFS(dirName), fileName)
+		if err != nil {
+			klog.Fatalf("error reading bearer file:", err)
+		}
+		options = append(options, withToken(bearer))
+	}
+	if forceGet {
+		klog.Infof("Forcing api,Client to use GET requests")
+		options = append(options, withGet)
+	}
+	if c, err = newClient(c, options...); err != nil {
+		klog.Fatalf("error building custom API client:", err)
+	}
 	apiClient := v1.NewAPI(c)
 
 	// server mux
@@ -72,9 +99,13 @@ func main() {
 func federate(ctx context.Context, w http.ResponseWriter, r *http.Request, apiClient v1.API) {
 	// TODO: extend to support multiple match queries
 	// This will only act based on first match query
-	matchQuery := r.URL.Query().Get("match[]")
+	params := r.URL.Query()
+	matchQuery := params.Get("match[]")
 
 	nctx, ncancel := context.WithTimeout(r.Context(), 2*time.Minute)
+	if params.Del("match[]"); len(params) > 0 {
+		nctx = addValues(nctx, params)
+	}
 	start := time.Now()
 	val, _, err := apiClient.Query(nctx, matchQuery, time.Now()) // Ignoring warnings for now.
 	responseTime := time.Since(start).Seconds()

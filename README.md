@@ -44,6 +44,10 @@ Flags:
         Skip TLS Verfication (default false)
   -upstream string
         The upstream thanos URL (default "http://127.0.0.1:9090")
+  -bearer-file string
+        Path to file containing Authorization bearer token, if needed.
+  -force-get
+        Force prometheus api.Client to use GET requests instead of POST (default false)
 ```
 
 Sample k8s deployment (as a side car with thanos or prometheus):
