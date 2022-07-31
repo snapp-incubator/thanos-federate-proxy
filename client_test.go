@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -79,7 +78,7 @@ func TestBearerToken(t *testing.T) {
 		t.Run("Read bearer from "+fileName, func(t *testing.T) {
 			_, _, err := read(fileName)
 			if !errors.Is(err, expectedErr) {
-				t.Fatal(fmt.Sprintf("Expected error %v, got %v", expectedErr, err))
+				t.Fatalf("Expected error %v, got %v", expectedErr, err)
 			}
 		})
 	}
@@ -93,15 +92,18 @@ func TestBearerToken(t *testing.T) {
 		t.Run("Read bearer from "+fileName, func(t *testing.T) {
 			m, c, err := read(fileName)
 			if err != nil {
-				t.Fatal(fmt.Sprintf("Expected no error, got %v", err))
+				t.Fatalf("Expected no error, got %v", err)
 			}
 			req, _ := http.NewRequest(http.MethodGet, "http://localhost/test", nil)
-			c.Do(context.TODO(), req)
+			_, _, err = c.Do(context.TODO(), req)
+			if err != nil {
+				t.Fatal("Error:", err)
+			}
 			if m.header == nil || len(m.header) <= 0 {
 				t.Fatal("Empty headers in request")
 			}
 			if authz := m.header.Get("Authorization"); authz != validBearerHeader {
-				t.Fatal(fmt.Sprintf("Expected Authorization header '%s', got '%s'", validBearerHeader, authz))
+				t.Fatalf("Expected Authorization header '%s', got '%s'", validBearerHeader, authz)
 			}
 		})
 	}
