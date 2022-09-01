@@ -1,5 +1,5 @@
 #build stage
-FROM golang:1.17-buster AS builder
+FROM golang:1.19.0-buster AS builder
 WORKDIR /go/src/app
 
 COPY go.sum go.mod /go/src/app/
