@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/prometheus/client_golang v1.13.0
 	github.com/prometheus/common v0.37.0
-	k8s.io/klog/v2 v2.40.1
+	k8s.io/klog/v2 v2.80.1
 )
 
 require (
