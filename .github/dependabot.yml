@@ -4,8 +4,6 @@ updates:
     directory: "/"
     schedule:
       interval: monthly
-    assignees:
-      - m-yosefpor
     labels:
       - dependencies
 
@@ -13,7 +11,5 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
-    assignees:
-      - m-yosefpor
     labels:
       - dependencies
