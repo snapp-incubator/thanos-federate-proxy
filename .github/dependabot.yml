@@ -6,10 +6,17 @@ updates:
       interval: monthly
     labels:
       - dependencies
-
+    groups:
+       dev-dependencies:
+          patterns:
+            - "*"  
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
       interval: "monthly"
     labels:
       - dependencies
+    groups:
+       dev-dependencies:
+          patterns:
+            - "*"  
