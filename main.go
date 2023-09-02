@@ -97,43 +97,47 @@ func main() {
 }
 
 func federate(ctx context.Context, w http.ResponseWriter, r *http.Request, apiClient v1.API) {
-	// TODO: extend to support multiple match queries
-	// This will only act based on first match query
 	params := r.URL.Query()
-	matchQuery := params.Get("match[]")
+	matchQueries := params["match[]"]
 
 	nctx, ncancel := context.WithTimeout(r.Context(), 2*time.Minute)
+	defer ncancel()
 	if params.Del("match[]"); len(params) > 0 {
 		nctx = addValues(nctx, params)
 	}
-	start := time.Now()
-	val, _, err := apiClient.Query(nctx, matchQuery, time.Now()) // Ignoring warnings for now.
-	responseTime := time.Since(start).Seconds()
-	ncancel()
+	for _, matchQuery := range matchQueries {
+		start := time.Now()
+		// Ignoring warnings for now.
+		val, _, err := apiClient.Query(nctx, matchQuery, start)
+		responseTime := time.Since(start).Seconds()
 
-	if err != nil {
-		klog.Errorf("query failed:", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		if err != nil {
+			klog.Errorf("query failed:", err)
+			scrapeDurations.With(prometheus.Labels{
+				"match_query": matchQuery,
+				"status_code": "500",
+			}).Observe(responseTime)
+			w.WriteHeader(http.StatusInternalServerError)
+			ncancel()
+			return
+		}
+		if val.Type() != model.ValVector {
+			klog.Errorf("query result is not a vector: %v", val.Type())
+			scrapeDurations.With(prometheus.Labels{
+				"match_query": matchQuery,
+				"status_code": "502",
+			}).Observe(responseTime)
+			// TODO: should we continue to the next query?
+			w.WriteHeader(http.StatusInternalServerError)
+			ncancel()
+			return
+		}
 		scrapeDurations.With(prometheus.Labels{
 			"match_query": matchQuery,
-			"status_code": "500",
+			"status_code": "200",
 		}).Observe(responseTime)
-		return
+		printVector(w, val)
 	}
-	if val.Type() != model.ValVector {
-		klog.Errorf("query result is not a vector: %v", val.Type())
-		w.WriteHeader(http.StatusInternalServerError)
-		scrapeDurations.With(prometheus.Labels{
-			"match_query": matchQuery,
-			"status_code": "502",
-		}).Observe(responseTime)
-		return
-	}
-	scrapeDurations.With(prometheus.Labels{
-		"match_query": matchQuery,
-		"status_code": "200",
-	}).Observe(responseTime)
-	printVector(w, val)
 }
 
 func printVector(w http.ResponseWriter, v model.Value) {
