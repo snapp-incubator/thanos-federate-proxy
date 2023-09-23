@@ -39,7 +39,6 @@ func (m *mockClient) Do(ctx context.Context, req *http.Request) (*http.Response,
 
 // TestBearerToken validates bearer token reading and insertion
 func TestBearerToken(t *testing.T) {
-
 	fsys := fstest.MapFS{
 		"empty_bearer": {
 			Data: []byte{},
@@ -111,7 +110,6 @@ func TestBearerToken(t *testing.T) {
 
 // TestWithGet validates GET request filtering
 func TestWithGet(t *testing.T) {
-
 	post := func(t *testing.T, opts ...clientOption) *http.Response {
 		c, err := newClient(&mockClient{}, opts...)
 		if err != nil {

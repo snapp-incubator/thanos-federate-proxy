@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"io"
 	"io/fs"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -62,7 +62,7 @@ func (c client) Do(ctx context.Context, req *http.Request) (*http.Response, []by
 			Proto:         req.Proto,
 			ProtoMajor:    req.ProtoMajor,
 			ProtoMinor:    req.ProtoMinor,
-			Body:          ioutil.NopCloser(nil),
+			Body:          io.NopCloser(nil),
 			ContentLength: 0,
 			Request:       req,
 			Header:        make(http.Header, 0),

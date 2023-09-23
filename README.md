@@ -6,7 +6,6 @@ The most common use case for this proxy is to be used as a side car with [Thanos
 
 ## Usage
 
-
 ### Docker
 
 ```bash
@@ -21,23 +20,19 @@ wget https://github.com/snapp-incubator/thanos-federate-proxy/releases/download/
 tar xvzf thanos-federate-proxy-${VERSION}.linux-amd64.tar.gz thanos-federate-proxy-${VERSION}.linux-amd64/thanos-federate-proxy
 ```
 
-
 ### From source
 
-```
+```sh
 git clone https://github.com/snapp-incubator/thanos-federate-proxy
 cd thanos-federate-proxy && go build
 ./thanos-federate-proxy <optional-extra-flags>
 ```
 
-
-
 ## Configuration
-
 
 Flags:
 
-```
+```text
   -insecure-listen-address string
         The address which proxy listens on (default "127.0.0.1:9099")
   -tlsSkipVerify
@@ -66,7 +61,6 @@ containers:
     protocol: TCP
 ```
 
-
 Sample prometheus config for federation:
 
 ```yml
@@ -86,14 +80,12 @@ scrape_configs:
 
 The following limitations will be addressed in future releases (see [Roadmap](#roadmap)):
 
-- At the moment thanos-federate-proxy does not support multiple matcher queries and will only apply the first one.
-
 - You can not pass empty matcher to prometheus for scraping all the metrics (see [this prometheus issue](https://github.com/prometheus/prometheus/issues/2162)). A workaround is to use the following matcher:
 
-    ```
-    'match[]':
+  ```yml
+  'match[]':
     - '{__name__=~".+"}'
-    ```
+  ```
 
     Note that `{__name__=~".*"}` won't also work and you should use `".+"` instead of `".*"`.
 
@@ -102,25 +94,28 @@ The following limitations will be addressed in future releases (see [Roadmap](#r
 - [x] test federation
 - [x] tlsSkipVerify flag
 - [x] Dockerfile
-- [x] github actions
+- [x] Github actions
 - [x] metrics
-- [ ] support multiple matchers
+- [x] support multiple matchers
 - [ ] support empty matchers
 - [ ] support store-API for better performance
 - [ ] return error message instead of only logging it (??)
 - [ ] remove space after comma in metrics (causing no issues)
+- [ ] make query timeouts configurable
+- [ ] add markdown lint to CI
 
 ## Metrics
 
-| Metric                                              | Notes
-|-----------------------------------------------------|------------------------------------
-| thanosfederateproxy_scrape_duration_seconds_count   | Total number of scrape requests with response code
-| thanosfederateproxy_scrape_duration_seconds_sum     | Duration of scrape requests with response code
-| thanosfederateproxy_scrape_duration_seconds_bucket  | Count of scrape requests per bucket (for calculating percentile)
+| Metric                                             | Notes                                                            |
+| -------------------------------------------------- | ---------------------------------------------------------------- |
+| thanosfederateproxy_scrape_duration_seconds_count  | Total number of scrape requests with response code               |
+| thanosfederateproxy_scrape_duration_seconds_sum    | Duration of scrape requests with response code                   |
+| thanosfederateproxy_scrape_duration_seconds_bucket | Count of scrape requests per bucket (for calculating percentile) |
 
 ## Changelog
 
 See [CHANGELOG.md](./CHANGELOG.md)
+
 ## Security
 
 ### Reporting security vulnerabilities
