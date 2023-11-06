@@ -143,6 +143,9 @@ func federate(ctx context.Context, w http.ResponseWriter, r *http.Request, apiCl
 func printVector(w http.ResponseWriter, v model.Value) {
 	vec := v.(model.Vector)
 	for _, sample := range vec {
+		if _, ok := sample.Metric[model.InstanceLabel]; !ok {
+			sample.Metric[model.InstanceLabel] = ""
+		}
 		fmt.Fprintf(w, "%v %v %v\n", sample.Metric, sample.Value, int(sample.Timestamp))
 	}
 }
