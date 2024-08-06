@@ -59,19 +59,19 @@ func main() {
 		RoundTripper: roundTripper,
 	})
 	if err != nil {
-		klog.Fatalf("error creating API client:", err)
+		klog.Fatalf("error creating API client: %s", err)
 	}
 	// Collect client options
 	options := []clientOption{}
 	if bearerFile != "" {
 		fullPath, err := filepath.Abs(bearerFile)
 		if err != nil {
-			klog.Fatalf("error locating bearer file:", err)
+			klog.Fatalf("error locating bearer file: %s", err)
 		}
 		dirName, fileName := filepath.Split(fullPath)
 		bearer, err := readBearerToken(os.DirFS(dirName), fileName)
 		if err != nil {
-			klog.Fatalf("error reading bearer file:", err)
+			klog.Fatalf("error reading bearer file: %s", err)
 		}
 		options = append(options, withToken(bearer))
 	}
@@ -80,7 +80,7 @@ func main() {
 		options = append(options, withGet)
 	}
 	if c, err = newClient(c, options...); err != nil {
-		klog.Fatalf("error building custom API client:", err)
+		klog.Fatalf("error building custom API client: %s", err)
 	}
 	apiClient := v1.NewAPI(c)
 
@@ -96,7 +96,7 @@ func main() {
 	startServer(insecureListenAddress, mux, cancel)
 }
 
-func federate(ctx context.Context, w http.ResponseWriter, r *http.Request, apiClient v1.API) {
+func federate(_ context.Context, w http.ResponseWriter, r *http.Request, apiClient v1.API) {
 	params := r.URL.Query()
 	matchQueries := params["match[]"]
 
@@ -112,7 +112,8 @@ func federate(ctx context.Context, w http.ResponseWriter, r *http.Request, apiCl
 		responseTime := time.Since(start).Seconds()
 
 		if err != nil {
-			klog.Errorf("query failed:", err)
+			klog.Errorf("query failed: %s", err)
+
 			scrapeDurations.With(prometheus.Labels{
 				"match_query": matchQuery,
 				"status_code": "500",
