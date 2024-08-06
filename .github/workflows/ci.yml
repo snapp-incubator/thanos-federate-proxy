@@ -12,21 +12,31 @@ jobs:
     name: lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v6
         with:
           version: latest
+          args: --enable-all --timeout=30m
+
   test:
     name: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
       - run: go test -v ./... -covermode=atomic -coverprofile=coverage.out
-      - uses: codecov/codecov-action@v1
+      - uses: codecov/codecov-action@v4.5.0
         with:
           files: coverage.out
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: snapp-incubator/thanos-federate-proxy
+
   docker:
     name: docker
     runs-on: ubuntu-latest
