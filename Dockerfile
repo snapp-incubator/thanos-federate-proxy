@@ -1,5 +1,5 @@
 #build stage
-FROM golang:1.22-bullseye AS builder
+FROM golang:1.23-bullseye AS builder
 WORKDIR /go/src/app
 
 COPY go.sum go.mod /go/src/app/
