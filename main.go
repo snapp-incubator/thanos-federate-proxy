@@ -25,6 +25,7 @@ var (
 	tlsSkipVerify         bool
 	bearerFile            string
 	forceGet              bool
+	forwardHeaders        StringSliceVar
 )
 
 func parseFlag() {
@@ -33,6 +34,7 @@ func parseFlag() {
 	flag.BoolVar(&tlsSkipVerify, "tlsSkipVerify", false, "Skip TLS Verification")
 	flag.StringVar(&bearerFile, "bearer-file", "", "File containing bearer token for API requests")
 	flag.BoolVar(&forceGet, "force-get", false, "Force api.Client to use GET by rejecting POST requests")
+	flag.Var(&forwardHeaders, "forward-header", "A header that will be forwarded to upstream")
 	flag.Parse()
 }
 
@@ -79,6 +81,9 @@ func main() {
 		klog.Infof("Forcing api,Client to use GET requests")
 		options = append(options, withGet)
 	}
+	if forwardHeaders != nil {
+		klog.Infof("Following headers will be forwarded upstream: %v", forwardHeaders.String())
+	}
 	if c, err = newClient(c, options...); err != nil {
 		klog.Fatalf("error building custom API client: %s", err)
 	}
@@ -105,6 +110,7 @@ func federate(_ context.Context, w http.ResponseWriter, r *http.Request, apiClie
 	if params.Del("match[]"); len(params) > 0 {
 		nctx = addValues(nctx, params)
 	}
+	nctx = addForwardedHeader(nctx, &r.Header, &forwardHeaders)
 	for _, matchQuery := range matchQueries {
 		start := time.Now()
 		// Ignoring warnings for now.
