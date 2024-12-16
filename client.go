@@ -78,6 +78,14 @@ func (c client) Do(ctx context.Context, req *http.Request) (*http.Response, []by
 		}
 		req.URL.RawQuery = reqParams.Encode()
 	}
+	if header, ok := getForwardedHeader(ctx); ok {
+		if req.Header == nil {
+			req.Header = make(http.Header)
+		}
+		for key, fh := range header {
+			req.Header[key] = fh
+		}
+	}
 	if c.authz != "" {
 		if req.Header == nil {
 			req.Header = make(http.Header)
