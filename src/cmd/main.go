@@ -86,14 +86,12 @@ func main() {
 func Federate(_ context.Context, w http.ResponseWriter, r *http.Request, apiClient v1.API, restriction *Restriction) {
 	params := r.URL.Query()
 	matchQueries := params["match[]"]
-	fmt.Println("param is first:", params)
 	if restriction != nil {
 		labelBuilder := strings.Join(restriction.MetricLabels, ", ")
 		paramBuilder := fmt.Sprintf("%s{%s}", restriction.MetricName, labelBuilder)
 		params = url.Values{
 			"match[]": []string{paramBuilder},
 		}
-		fmt.Println("param2 is", params)
 		matchQueries = params["match[]"]
 	}
 
