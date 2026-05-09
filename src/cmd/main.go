@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -139,7 +138,10 @@ func Federate(_ context.Context, w http.ResponseWriter, r *http.Request, apiClie
 func PrintVector(w http.ResponseWriter, v model.Value) {
 	vec := v.(model.Vector)
 	for _, sample := range vec {
-		fmt.Fprintf(w, "%v %v %v\n", sample.Metric, sample.Value, int(sample.Timestamp))
+		_, err := fmt.Fprintf(w, "%v %v %v\n", sample.Metric, sample.Value, int(sample.Timestamp))
+		if err != nil {
+			return
+		}
 	}
 }
 
@@ -166,7 +168,7 @@ func LoadRestriction(cfg config.Config) (*Restriction, error) {
 	}
 
 	if len(loadedRest.MetricLabels) == 0 && loadedRest.MetricName == "" {
-		return nil, errors.New(fmt.Sprintf("Could not load restriction from %v", loadedRest))
+		return nil, fmt.Errorf("could not load restriction from %v", loadedRest)
 	}
 	return &loadedRest, nil
 }
