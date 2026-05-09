@@ -1,8 +1,8 @@
-package main
+package server
 
 import "github.com/prometheus/client_golang/prometheus"
 
-var scrapeDurations = prometheus.NewHistogramVec(
+var ScrapeDurations = prometheus.NewHistogramVec(
 	prometheus.HistogramOpts{
 		Name:    "thanosfederateproxy_scrape_duration",
 		Help:    "Duration of scrape requests with response code",
@@ -12,5 +12,5 @@ var scrapeDurations = prometheus.NewHistogramVec(
 )
 
 func init() {
-	prometheus.MustRegister(scrapeDurations)
+	prometheus.MustRegister(ScrapeDurations)
 }

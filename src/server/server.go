@@ -1,7 +1,8 @@
-package main
+package server
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"os"
 	"os/signal"
@@ -11,7 +12,7 @@ import (
 	"k8s.io/klog/v2"
 )
 
-func startServer(listen string, mux *http.ServeMux, cancel context.CancelFunc) {
+func StartServer(listen string, mux *http.ServeMux, cancel context.CancelFunc) {
 	srv := &http.Server{
 		Addr:    listen,
 		Handler: mux,
@@ -22,7 +23,7 @@ func startServer(listen string, mux *http.ServeMux, cancel context.CancelFunc) {
 
 	go func() {
 		klog.Infof("Listening on port %s ...\n", listen)
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			klog.Fatalf("listen:%+s\n", err)
 		}
 	}()
