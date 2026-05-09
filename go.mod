@@ -1,6 +1,6 @@
 module github.com/snapp-incubator/thanos-federate-proxy
 
-go 1.25.1
+go 1.25
 
 require (
 	github.com/prometheus/client_golang v1.20.5
