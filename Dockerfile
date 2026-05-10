@@ -6,7 +6,7 @@ COPY go.sum go.mod /go/src/app/
 RUN go mod download
 
 COPY . /go/src/app
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o prom_query_federate
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o prom_query_federate ./src/cmd/
 
 #final stage
 FROM debian:bullseye-slim
