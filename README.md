@@ -43,6 +43,7 @@ Flags:
         Path to file containing Authorization bearer token, if needed.
   -force-get
         Force prometheus api.Client to use GET requests instead of POST (default false)
+  -restrict-file
 ```
 
 Sample k8s deployment (as a side car with thanos or prometheus):
@@ -75,6 +76,16 @@ scrape_configs:
     - targets:
         - 'thanos.svc.cluster:9099'
 ```
+
+If you want to limit user to a specific query, you can use the restriction file. Here is a sample:
+
+```yaml
+metric_name: up
+metric_labels:
+- "job=~\"service-a-.*\""
+```
+
+Now when the user queries /federate, they only receive what you specified in this file.
 
 ## Limitations
 
