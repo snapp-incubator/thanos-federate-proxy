@@ -87,7 +87,14 @@ func Federate(_ context.Context, w http.ResponseWriter, r *http.Request, apiClie
 	matchQueries := params["match[]"]
 	if restriction != nil {
 		labelBuilder := strings.Join(restriction.MetricLabels, ", ")
-		paramBuilder := fmt.Sprintf("%s{%s}", restriction.MetricName, labelBuilder)
+		var paramBuilder string
+		if restriction.MetricName == "" {
+			paramBuilder = fmt.Sprintf("{%s}", labelBuilder)
+		} else if restriction.MetricLabels == nil {
+			paramBuilder = fmt.Sprintf("%s", restriction.MetricName)
+		} else {
+			paramBuilder = fmt.Sprintf("%s{%s}", restriction.MetricName, labelBuilder)
+		}
 		params = url.Values{
 			"match[]": []string{paramBuilder},
 		}
