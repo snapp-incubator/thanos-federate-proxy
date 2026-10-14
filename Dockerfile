@@ -1,5 +1,5 @@
 #build stage
-FROM golang:1.25.1-alpine AS builder
+FROM golang:1.27.2-alpine AS builder
 WORKDIR /go/src/app
 
 COPY go.sum go.mod /go/src/app/
@@ -9,7 +9,7 @@ COPY . /go/src/app
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o prom_query_federate ./src/cmd/
 
 #final stage
-FROM debian:bullseye-slim
+FROM debian:trixie-slim
 
 ENV TZ=UTC \
     PATH="/app:${PATH}"

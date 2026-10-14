@@ -108,8 +108,8 @@ func Federate(_ context.Context, w http.ResponseWriter, r *http.Request, apiClie
 	}
 	for _, matchQuery := range matchQueries {
 		start := time.Now()
-		// Ignoring warnings for now.
-		val, _, err := apiClient.Query(federateCtx, matchQuery, start)
+		// Ignoring warnings and infos for now.
+		val, _, _, err := apiClient.Query(federateCtx, matchQuery, start)
 		responseTime := time.Since(start).Seconds()
 
 		if err != nil {
