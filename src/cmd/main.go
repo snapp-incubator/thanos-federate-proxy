@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -106,6 +108,7 @@ func Federate(_ context.Context, w http.ResponseWriter, r *http.Request, apiClie
 	if params.Del("match[]"); len(params) > 0 {
 		federateCtx = client.AddValues(federateCtx, params)
 	}
+	var response bytes.Buffer
 	for _, matchQuery := range matchQueries {
 		start := time.Now()
 		// Ignoring warnings and infos for now.
@@ -138,11 +141,14 @@ func Federate(_ context.Context, w http.ResponseWriter, r *http.Request, apiClie
 			"match_query": matchQuery,
 			"status_code": "200",
 		}).Observe(responseTime)
-		PrintVector(w, val)
+		PrintVector(&response, val)
+	}
+	if _, err := response.WriteTo(w); err != nil {
+		klog.Errorf("failed to write federation response: %s", err)
 	}
 }
 
-func PrintVector(w http.ResponseWriter, v model.Value) {
+func PrintVector(w io.Writer, v model.Value) {
 	vec := v.(model.Vector)
 	for _, sample := range vec {
 		_, err := fmt.Fprintf(w, "%v %v %v\n", sample.Metric, sample.Value, int(sample.Timestamp))
